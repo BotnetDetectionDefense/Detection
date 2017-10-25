@@ -1,25 +1,28 @@
 import numpy as np
 import pandas as pd
+import mysql.connector
 
+conn = mysql.connector.connect(user='root', password = '1590', database='bot_detect_data')
 
 
 # Importing training data set\
-
-X_train=pd.read_excel('X_train.xlsx')
-Y_train=pd.read_excel('Y_train.xlsx')
-Souce_IP_Port = pd.read_excel('Source_IP_Port.xlsx')
+X_train = pd.read_sql("SELECT durat, prot, srcport, dstport, flags, tos, packets, bytes, flows FROM ctu13", con=conn)
+Y_train = pd.read_sql("SELECT label FROM ctu13", con=conn)
+Souce_IP_Port = pd.read_sql("SELECT srcip FROM ctu13", con=conn)
 
 
 # Importing test dataset
 
-X_test=pd.read_excel('X_train.xlsx')
+X_test=pd.read_excel('X_test.xlsx')
+#remove trailing spaces in column names
+X_test.rename(columns=lambda x: x.strip(),inplace=True)
 
 
 # Label encoding the data
 
 from sklearn.preprocessing import LabelEncoder
 le=LabelEncoder()
-column = ['Prot    ', 'Flags ']
+column = ['prot', 'flags']
 for col in column:
     if X_test[col].dtypes=='object':
         data=X_train[col].append(X_test[col])
@@ -32,7 +35,7 @@ for col in column:
         
 from sklearn.preprocessing import OneHotEncoder
 enc=OneHotEncoder(sparse=False)
-columns=['Prot    ', 'Flags ']
+columns=['prot', 'flags']
 for col in columns:
    data=X_train[[col]].append(X_test[[col]])
    enc.fit(data)
@@ -80,9 +83,8 @@ Bot_IP = Bots.drop_duplicates(subset=None, keep='first', inplace=False)
 
 # Import result to excel
 
-writer = pd.ExcelWriter('output.xlsx')
+writer = pd.ExcelWriter('output1.xlsx')
 predict_out.to_excel(writer,'Sheet1')
 writer.save()
-
 
 
