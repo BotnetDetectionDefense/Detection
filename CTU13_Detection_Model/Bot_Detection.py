@@ -91,7 +91,7 @@ Bots = pd.DataFrame()
 Bots = Prediction[Prediction[0] == 'Botnet\r']
 #print(Prediction[0])
 Bot_IP = Bots.drop_duplicates(subset=None, keep='first', inplace=False)
-print(Bot_IP['sourceip'])
+#print(Bot_IP['sourceip'])
 
 
 for index, row in Bot_IP.iterrows():
@@ -100,3 +100,7 @@ for index, row in Bot_IP.iterrows():
     args = (row['duration'], row['protocol'],row['sourceport'], row['destinationport'],row['tos'],row['packets'],row['bytes'],row['flows'],row[0])
     cur.execute(query, args)
     conn.commit()
+    
+writer = pd.ExcelWriter('output.xlsx')
+Bot_IP.to_excel(writer,'Sheet1')
+writer.save()
