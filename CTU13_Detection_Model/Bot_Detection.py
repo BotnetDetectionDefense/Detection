@@ -18,10 +18,13 @@ Y_train = pd.read_sql('SELECT lables FROM CTUTrainData', con=conn)
 
 # Importing test dataset
 
-X_test=pd.read_sql('SELECT duration, protocol, sourceport, destinationport, tos, packets, bytes, flows FROM CapturedTraffic', con=conn)
-Souce_IP_Port = pd.read_sql('SELECT sourceip FROM CapturedTraffic', con=conn)
+X_test=pd.read_sql('SELECT duration, protocol, sourceport, destinationport, tos, packets, bytes, flows FROM LiveTraffic', con=conn)
+Souce_IP_Port = pd.read_sql('SELECT sourceip,sourcemac FROM LiveTraffic', con=conn)
+X_result = pd.DataFrame()
+X_result = X_test.copy(deep=True)
 #remove trailing spaces in column names
 X_test.rename(columns=lambda x: x.strip(),inplace=True)
+
 
 
 # Label encoding the data
@@ -83,14 +86,17 @@ predict_out = pd.DataFrame(data=predict_out)
 # Trackig the bot IPs
 
 Prediction = Souce_IP_Port.join(predict_out)
+Prediction = Prediction.join(X_result)
 Bots = pd.DataFrame()
-Bots = Prediction[Prediction[0] == 'Botnet']
+Bots = Prediction[Prediction[0] == 'Botnet\r']
+#print(Prediction[0])
 Bot_IP = Bots.drop_duplicates(subset=None, keep='first', inplace=False)
-
-# Import result to excel
-
-writer = pd.ExcelWriter('output1.xlsx')
-predict_out.to_excel(writer,'Sheet1')
-writer.save()
+print(Bot_IP['sourceip'])
 
 
+for index, row in Bot_IP.iterrows():
+    cur = conn.cursor()
+    query = "INSERT INTO CTUTrainData (duration, protocol, sourceport, destinationport, tos, packets, bytes, flows, lables) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    args = (row['duration'], row['protocol'],row['sourceport'], row['destinationport'],row['tos'],row['packets'],row['bytes'],row['flows'],row[0])
+    cur.execute(query, args)
+    conn.commit()
