@@ -19,9 +19,9 @@ for packet in cap:
     Flows = "1"
     #print("Flows: ", Flows)
     try:
-        Service = []
-        Service = list(packet.layers)
-        #print(Service[3].layer_name)
+        ServiceList = []
+        ServiceList = list(packet.layers)
+        Service =ServiceList[3].layer_name
     except:
         Service = "Other"
         #print(Service)
