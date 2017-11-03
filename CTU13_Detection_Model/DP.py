@@ -1,19 +1,25 @@
 import numpy as np
 import pandas as pd
-import mysql.connector
+#import mysql.connector
 
-conn = mysql.connector.connect(user='root', password = '1590', database='bot_detect_data')
+#conn = mysql.connector.connect(user='root', password = '1590', database='bot_detect_data')
+import pymysql
+
+conn = pymysql.connect(host ='localhost' ,user='root', password = 'root', database='bot_detect_data')
+#cur = myConnection.cursor()
 
 
 # Importing training data set\
-X_train = pd.read_sql("SELECT durat, prot, srcport, dstport, flags, tos, packets, bytes, flows FROM ctu13", con=conn)
-Y_train = pd.read_sql("SELECT label FROM ctu13", con=conn)
-Souce_IP_Port = pd.read_sql("SELECT srcip FROM ctu13", con=conn)
+
+X_train = pd.read_sql('SELECT duration, protocol, sourceport, destinationport, tos, packets, bytes, flows FROM CTUTrainData', con=conn)
+Y_train = pd.read_sql('SELECT lables FROM CTUTrainData', con=conn)
+
 
 
 # Importing test dataset
 
-X_test=pd.read_excel('X_test.xlsx')
+X_test=pd.read_sql('SELECT duration, protocol, sourceport, destinationport, tos, packets, bytes, flows FROM CapturedTraffic', con=conn)
+Souce_IP_Port = pd.read_sql('SELECT sourceip FROM CapturedTraffic', con=conn)
 #remove trailing spaces in column names
 X_test.rename(columns=lambda x: x.strip(),inplace=True)
 
@@ -22,7 +28,7 @@ X_test.rename(columns=lambda x: x.strip(),inplace=True)
 
 from sklearn.preprocessing import LabelEncoder
 le=LabelEncoder()
-column = ['prot', 'flags']
+column = ['protocol']
 for col in column:
     if X_test[col].dtypes=='object':
         data=X_train[col].append(X_test[col])
@@ -35,7 +41,7 @@ for col in column:
         
 from sklearn.preprocessing import OneHotEncoder
 enc=OneHotEncoder(sparse=False)
-columns=['prot', 'flags']
+columns=['protocol']
 for col in columns:
    data=X_train[[col]].append(X_test[[col]])
    enc.fit(data)
