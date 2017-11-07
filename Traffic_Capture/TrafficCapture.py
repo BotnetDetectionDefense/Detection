@@ -46,8 +46,11 @@ for packet in cap:
             #print("Destination IP: ", DestinationIP)
             ToS = str(bin(int(packet.ip.dsfield, scale))[2:].zfill(num_of_bits))
             #print("ToS: ", ToS)
-            Bytes = str(packet.ip.len)
-            #print("Bytes: ", Bytes)
+            TotalLength = int(packet.ip.len)
+            HeaderLength = int(packet.ip.hdr_len)
+            NoOfBytes = TotalLength - HeaderLength
+            Bytes = str(NoOfBytes)
+            print("Bytes: ", Bytes)
             Length = str(packet.length)
             #print("Length: ", Length)
         # IP version 6
@@ -103,9 +106,9 @@ for packet in cap:
         #print("Broadcast Packet")
         pass
     
-    query = "INSERT INTO LiveTraffic (duration, protocol, sourcemac, sourceip, sourceport, destinationmac, destinationip, destinationport, flags, tos, packets, bytes, flows, service) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    query = "INSERT INTO LiveTraffic (duration, protocol, service, sourceip, sourcemac, sourceport, destinationip, destinationmac, destinationport, flags, tos, packets, bytes) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     #print(query)
-    args = (Duration, Protocol, EthSource, SourceIP, SourcePort, EthDestination, DestinationIP, DestinationPort, Flags, ToS, Length, Bytes, Flows, Service)
+    args = (Duration, Protocol, Service, SourceIP, EthSource, SourcePort, DestinationIP, EthDestination, DestinationPort, Flags, ToS, Length, Bytes)
     cur.execute(query, args)
     myConnection.commit()
 
