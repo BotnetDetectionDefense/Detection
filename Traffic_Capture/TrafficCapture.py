@@ -1,5 +1,6 @@
 import pyshark
 import pymysql
+import datetime
 
 #### Connection to MySQL Database #####
 myConnection = pymysql.connect(host ='localhost' ,user='root', password = 'root', database='bot_detect_data')
@@ -26,7 +27,7 @@ for packet in cap:
         EthDestination = str(packet.eth.dst_resolved)
 
         ##### Start Time of a Packet #####
-        Time = str(packet.frame_info.time_relative)
+        Time = packet.frame_info.time_relative
 
         ##### IP Version #####
         IPType = packet.eth.type
@@ -56,7 +57,7 @@ for packet in cap:
             TotalLength = int(packet.ip.len)
             HeaderLength = int(packet.ip.hdr_len)
             NoOfBytes = TotalLength - HeaderLength
-            Bytes = str(NoOfBytes)
+            Bytes = int(NoOfBytes)
 
         ##### 0x000086dd = IPv6 #####
         elif(IPType == "0x000086dd"):
@@ -80,7 +81,7 @@ for packet in cap:
             ToS = str(bin(int(packet.ipv6.tclass, scale))[2:].zfill(num_of_bits))
 
             ##### Payload Length #####
-            Bytes = str(packet.ipv6.plen)
+            Bytes = int(packet.ipv6.plen)
 
         ##### Flag, Source and Destination Protocol #####
         if(proto == "6"):

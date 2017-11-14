@@ -16,28 +16,43 @@ Y_train = Train_Data[['lables']]
 # Data pre-processing of the test data
 
 #Importing the live traffic data
-Test_Data = pd.read_sql('SELECT * FROM LiveTraffic', con=conn)
-i=0
-data = pd.DataFrame(columns=["protocol", "sourceip",'destinationip','sourceport','destinationport','count'])
-#final = pd.DataFrame(columns=["protocol", "sourceip",'destinationip','sourceport','destinationport'], data=[[5,np.nan]])
-x = Test_Data[['protocol','sourceip','destinationip','sourceport','destinationport']]
-for index, row in x.iterrows():
-    count = 0
-    a = row['protocol'], row['sourceip'], row['destinationip'], row['sourceport'], row['destinationport']
-    for index, row in x.iterrows():
-        b = row['protocol'], row['sourceip'], row['destinationip'], row['sourceport'], row['destinationport']
-        if(a==b):
-            count = count + 1
-    data['protocol'].append(row['protocol'])
-    data['sourceip'].append(row['sourceip'])
-    data['destinationip'].append(row['destinationip'])
-    data['sourceport'].append(row['sourceport'])
-    data['destinationport'].append(row['destinationport'])
-    data['count'].append(count)
-    print(a)
-    print("row number: ", i, ", ", " Count: ",  count)
-    i=i+1
+Live_Data = pd.read_sql('SELECT * FROM LiveTraffic', con=conn)
 
+Test_Data = pd.DataFrame(columns=['duration','protocol','service','sourceip','sourcemac','sourceport','destinationip','destinationmac','destinationport','tos','bytes','packets','count','dsthostsrvcount','lables'], index=[])
+i=0
+#x = Live_Data[['protocol','sourceip','destinationip','sourceport','destinationport']]
+
+for index, row in Live_Data.iterrows():
+    count = 0
+    j = 0
+    temp = pd.DataFrame(columns=['protocol','sourceip','destinationip','sourceport','destinationport','captime','bytes'], index=[])
+    a = row['protocol'], row['sourceip'], row['destinationip'],row['sourceport'],row['destinationport']
+    print(a)
+    protocol01 = row['protocol']
+    sourceport01 = row['sourceport']
+    destinationport01 = row['destinationport']
+    sourceip01 = row['sourceip']
+    destinationip01 = row['destinationip']
+    for index, row in Live_Data.iterrows():
+        b = row['protocol'], row['sourceip'], row['destinationip'],row['sourceport'],row['destinationport']
+        protocol02 = row['protocol']
+        sourceport02 = row['sourceport']
+        destinationport02 = row['destinationport']
+        sourceip02 = row['sourceip']
+        destinationip02 = row['destinationip']
+        if((protocol01 == protocol02) and (sourceport01 == sourceport02) and (destinationport01 == destinationport02) and (sourceip01 == sourceip02) and (destinationip01==destinationip02)):
+            print(b)
+            count = count + 1
+            temp.loc[j] = pd.Series({'protocol':protocol02, 'sourceport':sourceport02, 'destinationport':destinationport02, 'sourceip':sourceip02, 'destinationip':destinationip02, 'captime':row['captime'],'bytes':row['bytes']})
+            j=j+1
+    Total = temp['bytes'].sum()
+    print("row number: ", i, ", ", " Count: ",  count, "Bytes: ", Total)
+    print(temp)
+    print(a)
+    #Test_Data.loc[i] = pd.Series({'protocol':protocol01, 'sourceport':sourceport02, 'destinationport':destinationport02,'packet':count,})
+    i=i+1
+    
+    
 X_test = 
 X_result = pd.DataFrame()
 X_result = X_test.copy(deep=True)
