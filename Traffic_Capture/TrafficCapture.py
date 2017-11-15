@@ -1,13 +1,9 @@
 import pyshark
-import pymysql
-import datetime
+import Database
 
-#### Connection to MySQL Database #####
-myConnection = pymysql.connect(host ='localhost' ,user='root', password = 'root', database='bot_detect_data')
-cur = myConnection.cursor()
+DB = Database.database_operation()
 
 cap = pyshark.FileCapture('example.pcap')
-
 scale = 16
 num_of_bits = 8
 for packet in cap:
@@ -98,12 +94,9 @@ for packet in cap:
             Flags = "00000000"
         #print(Time, Protocol, Service, SourceIP, EthSource, SourcePort, DestinationIP, EthDestination, DestinationPort, Flags, ToS, Bytes)
         ##### Insert the captured data to the LiveTraffic Table #####
-        query = "INSERT INTO LiveTraffic (captime, protocol, service, sourceip, sourcemac, sourceport, destinationip, destinationmac, destinationport, flags, tos, bytes) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        args = (Time, Protocol, Service, SourceIP, EthSource, SourcePort, DestinationIP, EthDestination, DestinationPort, Flags, ToS, Bytes)
-        cur.execute(query, args)
-        myConnection.commit()
+        DB.insert_data(Time, Protocol, Service, SourceIP, EthSource, SourcePort, DestinationIP, EthDestination, DestinationPort, Flags, ToS, Bytes)
 
+       
     except:
         pass
         
-myConnection.close()
