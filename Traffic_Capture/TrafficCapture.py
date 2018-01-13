@@ -2,8 +2,8 @@ import pyshark
 import Database
 
 DB = Database.database_operation()
-
-cap = pyshark.FileCapture('example.pcap')
+i = 0
+cap = pyshark.FileCapture('capture.pcap')
 scale = 16
 num_of_bits = 8
 for packet in cap:
@@ -17,16 +17,23 @@ for packet in cap:
             Service =ServiceList[3].layer_name
     except:
         Service = "Other"
+
+    print(Service)
     try:
         ##### Source and Destination MAC Address #####
-        EthSource = str(packet.eth.src_resolved)
-        EthDestination = str(packet.eth.dst_resolved)
+        try:
+            EthDestination = str(packet.eth.dst_resolved)
+            EthSource = str(packet.eth.src_resolved)
+        except:
+            EthSource = str(packet.sll.src_eth)
+            EthDestination = "00:00:00:00:00:00"
 
         ##### Start Time of a Packet #####
         Time = packet.frame_info.time_relative
+        #print(Time)
 
         ##### IP Version #####
-        IPType = packet.eth.type
+        IPType = packet.sll.etype
 
         ##### 0x00000800 = IPv4 #####
         if(IPType == "0x00000800"):
@@ -41,6 +48,7 @@ for packet in cap:
                 Protocol = "ICMP"
             else:
                 Protocol = None
+
 
             ##### Source and Destination IP #####
             SourceIP = str(packet.ip.src)
@@ -92,11 +100,11 @@ for packet in cap:
             SourcePort = "7"
             DestinationPort = "7"
             Flags = "00000000"
-        #print(Time, Protocol, Service, SourceIP, EthSource, SourcePort, DestinationIP, EthDestination, DestinationPort, Flags, ToS, Bytes)
+
         ##### Insert the captured data to the LiveTraffic Table #####
         DB.insert_data(Time, Protocol, Service, SourceIP, EthSource, SourcePort, DestinationIP, EthDestination, DestinationPort, Flags, ToS, Bytes)
-
-       
+        i = i +1
+    
     except:
         pass
         
